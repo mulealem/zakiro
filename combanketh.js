@@ -1,7 +1,10 @@
 import puppeteer from "puppeteer";
 
 async function getCombankethExchangeRates() {
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ["--no-sandbox"],
+  });
   const page = await browser.newPage();
   // Navigate the page to a URL.
   await page.goto("https://combanketh.et/en/exchange-rate", {
