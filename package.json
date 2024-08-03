@@ -13,7 +13,10 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",
     "axios": "^1.7.3",
+    "cli-table3": "^0.6.5",
     "cron": "^3.1.7",
-    "puppeteer": "^22.15.0"
+    "node-telegram-bot-api": "^0.66.0",
+    "puppeteer": "^22.15.0",
+    "telegraf": "^4.16.3"
   }
 }

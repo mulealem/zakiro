@@ -2,6 +2,17 @@ import { CronJob } from "cron";
 
 import axios from "axios";
 
+// const TelegramBot = require("node-telegram-bot-api");
+import TelegramBot from "node-telegram-bot-api";
+
+// Replace with your bot token
+const token = "6834834075:AAEGH3tT_uW1Efd2Z_uXEAJaFZGeNhPo124";
+
+// Create a bot that uses 'polling' to fetch new updates
+const bot = new TelegramBot(token, { polling: true });
+
+import Table from "cli-table3";
+
 // import getAwashbankExchangeRates from "./awashbank.js";
 // import getBankofabyssiniaExchangeRates from "./bankofabyssinia.js";
 // import getCombankethExchangeRates from "./combanketh.js";
@@ -18,11 +29,33 @@ const service_key =
 
 export const supabaseClient = createClient(supabase_url, service_key);
 
+bot.on("message", async (msg) => {
+  const chatId = msg.chat.id;
+  // console.log("chatId", chatId);
+  // bot.sendMessage(chatId, "Received your message" + msg.text);
+  if (msg.text === "/start") {
+    const { data, error } = await supabaseClient
+      .from("telegram_chat")
+      .upsert({ chat_id: msg.chat.id }, { onConflict: "chat_id" });
+    bot.sendMessage(
+      chatId,
+      "Welcome to the Ethiopian Banks Exchange Rates Bot, @" +
+        // user
+        msg.chat.username
+    );
+  }
+});
+
 const job = new CronJob(
   // every 30 minutes
   "*/1 * * * *", // cronTime
   async function () {
     console.log("Running job");
+
+    // const chatId = "1553400782";
+
+    // Send a message to the chat
+    // bot.sendMessage(chatId, "Trying to get the data");
 
     axios
       .get(
@@ -108,6 +141,43 @@ const job = new CronJob(
               filteredNewCombankethExchangeRates.length > 0
             ) {
               //   console.log("No new data found for combanketh");
+
+              const { data: telegramChatData, error: telegramChatError } =
+                await supabaseClient.from("telegram_chat").select("*");
+              if (telegramChatError) {
+                console.error("error", telegramChatError);
+              } else {
+                console.log("telegramChatData", telegramChatData);
+                telegramChatData.forEach(async (chat) => {
+                  const chatId = chat.chat_id;
+                  console.log("chatId", chatId);
+
+                  let combankethExchangeRatesTable = `
+                  \n Commertial Bank of Ethiopia (CBE) Exchange Rates [Update]
+                  `;
+                  combankethExchangeRatesTable =
+                    combankethExchangeRatesTable +
+                    "\n" +
+                    filteredNewCombankethExchangeRates
+                      .filter(
+                        (exchangeRate) =>
+                          exchangeRate.buying_price > 0 &&
+                          exchangeRate.selling_price > 0
+                      )
+                      .map(
+                        (exchangeRate) =>
+                          `${exchangeRate.currency} \n - Buying: ${exchangeRate.buying_price} \n - Selling: ${exchangeRate.selling_price}`
+                      )
+                      .join("\n");
+
+                  console.log(
+                    "combankethExchangeRatesTable",
+                    combankethExchangeRatesTable
+                  );
+
+                  bot.sendMessage(chatId, combankethExchangeRatesTable);
+                });
+              }
 
               const {
                 data: newExchangeRatesData,
