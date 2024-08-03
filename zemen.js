@@ -1,5 +1,5 @@
 import puppeteer from "puppeteer";
-const browser = await puppeteer.launch({ headless: false });
+const browser = await puppeteer.launch({ headless: true });
 const page = await browser.newPage();
 
 // Navigate the page to a URL.

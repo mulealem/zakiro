@@ -1,7 +1,7 @@
 import puppeteer from "puppeteer";
 
 async function getAwashbankExchangeRates() {
-  const browser = await puppeteer.launch({ headless: false });
+  const browser = await puppeteer.launch({ headless: true });
   const page = await browser.newPage();
   // Navigate the page to a URL.
   await page.goto("https://awashbank.com/exchange-historical/", {
